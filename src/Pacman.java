@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 
-public class Pacman extends JApplet implements MouseListener, KeyListener {
+public class Pacman implements MouseListener, KeyListener {
     long titleTimer = -1;
     long timer = -1;
     Board b = new Board();
@@ -13,10 +13,11 @@ public class Pacman extends JApplet implements MouseListener, KeyListener {
     public Pacman() {
         b.requestFocus();
         JFrame f = new JFrame();
-        f.setSize(420, 460);
+        f.setSize(420, 500);
         f.add(b, BorderLayout.CENTER);
         b.addMouseListener(this);
         b.addKeyListener(this);
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setVisible(true);
         f.setResizable(false);
         b.New = 1;
@@ -70,6 +71,9 @@ public class Pacman extends JApplet implements MouseListener, KeyListener {
             }
             b.repaint();
             return;
+        } else if (b.selectionScreen) {
+            b.repaint();
+            return;
         } else if (b.winScreen || b.overScreen) {
             if (timer == -1) {
                 timer = System.currentTimeMillis();
@@ -93,10 +97,11 @@ public class Pacman extends JApplet implements MouseListener, KeyListener {
                 b.player.move();
             }
 
-            b.ghost1.move();
-            b.ghost2.move();
-            b.ghost3.move();
-            b.ghost4.move();
+            java.util.List<Ghost> ghosts = java.util.Arrays.asList(b.ghost1, b.ghost2, b.ghost3, b.ghost4);
+            b.ghost1.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
+            b.ghost2.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
+            b.ghost3.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
+            b.ghost4.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
             b.player.updatePellet();
             b.ghost1.updatePellet();
             b.ghost2.updatePellet();
@@ -134,6 +139,20 @@ public class Pacman extends JApplet implements MouseListener, KeyListener {
     public void keyPressed(KeyEvent e) {
         if (b.titleScreen) {
             b.titleScreen = false;
+            b.selectionScreen = true;
+            return;
+        } else if (b.selectionScreen) {
+            if (e.getKeyCode() == KeyEvent.VK_D) {
+                b.ghostAlg = Ghost.Algorithm.DIJKSTRA;
+            } else if (e.getKeyCode() == KeyEvent.VK_A) {
+                b.ghostAlg = Ghost.Algorithm.ASTAR;
+            } else if (e.getKeyCode() == KeyEvent.VK_R) {
+                b.ghostAlg = Ghost.Algorithm.RANDOM;
+            } else if (e.getKeyCode() == KeyEvent.VK_T) {
+                b.ghostAlg = Ghost.Algorithm.TEAM;
+            } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                b.selectionScreen = false;
+            }
             return;
         } else if (b.winScreen || b.overScreen) {
             b.titleScreen = true;
@@ -165,7 +184,7 @@ public class Pacman extends JApplet implements MouseListener, KeyListener {
     }
 
     public void mousePressed(MouseEvent e) {
-        if (b.titleScreen || b.winScreen || b.overScreen) {
+        if (b.titleScreen || b.selectionScreen || b.winScreen || b.overScreen) {
             return;
         }
 

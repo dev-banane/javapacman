@@ -24,10 +24,10 @@ public class Board extends JPanel {
     Image winScreenImage = Toolkit.getDefaultToolkit().getImage("img/winScreen.jpg");
 
     Player player = new Player(200, 300);
-    Ghost ghost1 = new Ghost(180, 180);
-    Ghost ghost2 = new Ghost(200, 180);
-    Ghost ghost3 = new Ghost(220, 180);
-    Ghost ghost4 = new Ghost(220, 180);
+    Ghost ghost1 = new Ghost(180, 180, 1);
+    Ghost ghost2 = new Ghost(200, 180, 2);
+    Ghost ghost3 = new Ghost(220, 180, 3);
+    Ghost ghost4 = new Ghost(220, 180, 4);
 
     long timer = System.currentTimeMillis();
     int dying = 0;
@@ -35,12 +35,13 @@ public class Board extends JPanel {
     int highScore;
     boolean clearHighScores = false;
     int numLives = 2;
-    boolean[][] state;
     boolean[][] pellets;
+    int[][] map;
     int gridSize;
     int max;
     boolean stopped;
     boolean titleScreen;
+    boolean selectionScreen = false;
     boolean winScreen = false;
     boolean overScreen = false;
     boolean demo = false;
@@ -49,6 +50,7 @@ public class Board extends JPanel {
     int lastPelletEatenX = 0;
     int lastPelletEatenY = 0;
     Font font = new Font("Monospaced", Font.BOLD, 12);
+    Ghost.Algorithm ghostAlg = Ghost.Algorithm.ASTAR;
 
     public Board() {
         initHighScores();
@@ -59,6 +61,7 @@ public class Board extends JPanel {
         gridSize = 20;
         New = 0;
         titleScreen = true;
+        map = new int[20][20];
     }
 
     public void initHighScores() {
@@ -98,12 +101,12 @@ public class Board extends JPanel {
 
     public void reset() {
         numLives = 2;
-        state = new boolean[20][20];
+        map = new int[20][20];
         pellets = new boolean[20][20];
 
         for (int i = 0; i < 20; i++) {
             for (int j = 0; j < 20; j++) {
-                state[i][j] = true;
+                map[i][j] = 0;
                 pellets[i][j] = true;
             }
         }
@@ -122,7 +125,7 @@ public class Board extends JPanel {
     public void updateMap(int x, int y, int width, int height) {
         for (int i = x / gridSize; i < x / gridSize + width / gridSize; i++) {
             for (int j = y / gridSize; j < y / gridSize + height / gridSize; j++) {
-                state[i - 1][j - 1] = false;
+                map[i - 1][j - 1] = 1;
                 pellets[i - 1][j - 1] = false;
             }
         }
@@ -304,6 +307,31 @@ public class Board extends JPanel {
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, 600, 600);
             g.drawImage(titleScreenImage, 0, 0, Color.BLACK, null);
+
+            sounds.nomNomStop();
+            New = 1;
+            return;
+        } else if (selectionScreen) {
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, 600, 600);
+
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font("Monospaced", Font.BOLD, 20));
+            g.drawString("SELECT GHOST ALGORITHM", 60, 100);
+
+            g.setFont(font);
+            g.drawString("PRESS 'A' for A*", 100, 180);
+            g.drawString("PRESS 'R' for Random (Classic)", 100, 240);
+
+            g.setFont(new Font("Monospaced", Font.ITALIC, 14));
+            String current = "";
+            switch(ghostAlg) {
+                case ASTAR: current = "A*"; break;
+                case RANDOM: current = "Random"; break;
+            }
+            g.drawString("CURRENT SELECTION: " + current, 100, 350);
+            g.drawString("PRESS 'ENTER' TO START GAME", 100, 380);
+
             sounds.nomNomStop();
             New = 1;
             return;
@@ -340,20 +368,24 @@ public class Board extends JPanel {
         if (New == 1) {
             reset();
             player = new Player(200, 300);
-            ghost1 = new Ghost(180, 180);
-            ghost2 = new Ghost(200, 180);
-            ghost3 = new Ghost(220, 180);
-            ghost4 = new Ghost(220, 180);
+            ghost1 = new Ghost(180, 180, 1);
+            ghost2 = new Ghost(200, 180, 2);
+            ghost3 = new Ghost(220, 180, 3);
+            ghost4 = new Ghost(220, 180, 4);
             currScore = 0;
             drawBoard(g);
             drawPellets(g);
             drawLives(g);
-            player.updateState(state);
-            player.state[9][7] = false;
-            ghost1.updateState(state);
-            ghost2.updateState(state);
-            ghost3.updateState(state);
-            ghost4.updateState(state);
+            player.updateState(map);
+            player.map[9][7] = 1;
+            ghost1.updateState(map);
+            ghost2.updateState(map);
+            ghost3.updateState(map);
+            ghost4.updateState(map);
+            ghost1.algorithm = ghostAlg;
+            ghost2.algorithm = ghostAlg;
+            ghost3.algorithm = ghostAlg;
+            ghost4.algorithm = ghostAlg;
 
             g.setColor(Color.YELLOW);
             g.setFont(font);
