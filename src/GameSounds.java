@@ -19,16 +19,19 @@ public class GameSounds {
             audioIn = AudioSystem.getAudioInputStream(url);
             nomNom = AudioSystem.getClip();
             nomNom.open(audioIn);
+            setVolume(nomNom, -15.0f);
 
             url = this.getClass().getClassLoader().getResource("sounds/newGame.wav");
             audioIn = AudioSystem.getAudioInputStream(url);
             newGame = AudioSystem.getClip();
             newGame.open(audioIn);
+            setVolume(newGame, -15.0f);
 
             url = this.getClass().getClassLoader().getResource("sounds/death.wav");
             audioIn = AudioSystem.getAudioInputStream(url);
             death = AudioSystem.getClip();
             death.open(audioIn);
+            setVolume(death, -15.0f);
         } catch (Exception e) {
         }
     }
@@ -62,6 +65,15 @@ public class GameSounds {
             death.stop();
             death.setFramePosition(0);
             death.start();
+        }
+    }
+
+    private void setVolume(Clip clip, float level) {
+        try {
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            gainControl.setValue(level);
+        } catch (Exception e) {
+            System.err.println("Could not adjust volume: " + e);
         }
     }
 }

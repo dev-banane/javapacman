@@ -98,10 +98,10 @@ public class Pacman implements MouseListener, KeyListener {
             }
 
             java.util.List<Ghost> ghosts = java.util.Arrays.asList(b.ghost1, b.ghost2, b.ghost3, b.ghost4);
-            b.ghost1.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
-            b.ghost2.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
-            b.ghost3.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
-            b.ghost4.move(b.player.x, b.player.y, b.player.currDirection, ghosts);
+            b.ghost1.move(b.player.x, b.player.y, b.player.currDirection, ghosts, b.ghostAlg);
+            b.ghost2.move(b.player.x, b.player.y, b.player.currDirection, ghosts, b.ghostAlg);
+            b.ghost3.move(b.player.x, b.player.y, b.player.currDirection, ghosts, b.ghostAlg);
+            b.ghost4.move(b.player.x, b.player.y, b.player.currDirection, ghosts, b.ghostAlg);
             b.player.updatePellet();
             b.ghost1.updatePellet();
             b.ghost2.updatePellet();
@@ -150,6 +150,8 @@ public class Pacman implements MouseListener, KeyListener {
                 b.ghostAlg = Ghost.Algorithm.RANDOM;
             } else if (e.getKeyCode() == KeyEvent.VK_T) {
                 b.ghostAlg = Ghost.Algorithm.TEAM;
+            } else if (e.getKeyCode() == KeyEvent.VK_O) {
+                b.ghostAlg = Ghost.Algorithm.RANDOM_EACH;
             } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 b.selectionScreen = false;
             }

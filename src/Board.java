@@ -24,10 +24,10 @@ public class Board extends JPanel {
     Image winScreenImage = Toolkit.getDefaultToolkit().getImage("img/winScreen.jpg");
 
     Player player = new Player(200, 300);
-    Ghost ghost1 = new Ghost(180, 180, 1);
-    Ghost ghost2 = new Ghost(200, 180, 2);
-    Ghost ghost3 = new Ghost(220, 180, 3);
-    Ghost ghost4 = new Ghost(220, 180, 4);
+    Ghost ghost1 = new Ghost(180, 180);
+    Ghost ghost2 = new Ghost(200, 180);
+    Ghost ghost3 = new Ghost(220, 180);
+    Ghost ghost4 = new Ghost(220, 180);
 
     long timer = System.currentTimeMillis();
     int dying = 0;
@@ -49,8 +49,8 @@ public class Board extends JPanel {
     GameSounds sounds;
     int lastPelletEatenX = 0;
     int lastPelletEatenY = 0;
+    public Ghost.Algorithm ghostAlg = Ghost.Algorithm.RANDOM;
     Font font = new Font("Monospaced", Font.BOLD, 12);
-    Ghost.Algorithm ghostAlg = Ghost.Algorithm.ASTAR;
 
     public Board() {
         initHighScores();
@@ -72,6 +72,7 @@ public class Board extends JPanel {
             highScore = sc.nextInt();
             sc.close();
         } catch (Exception e) {
+            System.err.println("Error initliazing high scores: " + e);
         }
     }
 
@@ -82,6 +83,7 @@ public class Board extends JPanel {
             out.println(score);
             out.close();
         } catch (Exception e) {
+            System.err.println("Error updating high scores: " + e);
         }
         highScore = score;
         clearHighScores = true;
@@ -94,6 +96,7 @@ public class Board extends JPanel {
             out.println("0");
             out.close();
         } catch (Exception e) {
+            System.err.println("Error clearing high scores: " + e);
         }
         highScore = 0;
         clearHighScores = true;
@@ -120,6 +123,23 @@ public class Board extends JPanel {
         pellets[8][8] = false;
         pellets[9][8] = false;
         pellets[10][8] = false;
+
+        int[][] mapUpdates = {
+            {40, 40, 60, 20}, {120, 40, 60, 20}, {200, 20, 20, 40}, {240, 40, 60, 20},
+            {320, 40, 60, 20}, {40, 80, 60, 20}, {160, 80, 100, 20}, {200, 80, 20, 60},
+            {320, 80, 60, 20}, {20, 120, 80, 60}, {320, 120, 80, 60}, {20, 200, 80, 60},
+            {320, 200, 80, 60}, {160, 160, 40, 20}, {220, 160, 40, 20}, {160, 180, 20, 20},
+            {160, 200, 100, 20}, {240, 180, 20, 20}, {120, 120, 60, 20}, {120, 80, 20, 100},
+            {280, 80, 20, 100}, {240, 120, 60, 20}, {280, 200, 20, 60}, {120, 200, 20, 60},
+            {160, 240, 100, 20}, {200, 260, 20, 40}, {120, 280, 60, 20}, {240, 280, 60, 20},
+            {40, 280, 60, 20}, {80, 280, 20, 60}, {320, 280, 60, 20}, {320, 280, 20, 60},
+            {20, 320, 40, 20}, {360, 320, 40, 20}, {160, 320, 100, 20}, {200, 320, 20, 60},
+            {40, 360, 140, 20}, {240, 360, 140, 20}, {280, 320, 20, 60}, {120, 320, 20, 60}
+        };
+
+        for (int[] update : mapUpdates) {
+            updateMap(update[0], update[1], update[2], update[3]);
+        }
     }
 
     public void updateMap(int x, int y, int width, int height) {
@@ -155,94 +175,13 @@ public class Board extends JPanel {
         g.drawRect(19, 19, 382, 382);
         g.setColor(Color.BLUE);
 
-        g.fillRect(40, 40, 60, 20);
-        updateMap(40, 40, 60, 20);
-        g.fillRect(120, 40, 60, 20);
-        updateMap(120, 40, 60, 20);
-        g.fillRect(200, 20, 20, 40);
-        updateMap(200, 20, 20, 40);
-        g.fillRect(240, 40, 60, 20);
-        updateMap(240, 40, 60, 20);
-        g.fillRect(320, 40, 60, 20);
-        updateMap(320, 40, 60, 20);
-        g.fillRect(40, 80, 60, 20);
-        updateMap(40, 80, 60, 20);
-        g.fillRect(160, 80, 100, 20);
-        updateMap(160, 80, 100, 20);
-        g.fillRect(200, 80, 20, 60);
-        updateMap(200, 80, 20, 60);
-        g.fillRect(320, 80, 60, 20);
-        updateMap(320, 80, 60, 20);
-
-        g.fillRect(20, 120, 80, 60);
-        updateMap(20, 120, 80, 60);
-        g.fillRect(320, 120, 80, 60);
-        updateMap(320, 120, 80, 60);
-        g.fillRect(20, 200, 80, 60);
-        updateMap(20, 200, 80, 60);
-        g.fillRect(320, 200, 80, 60);
-        updateMap(320, 200, 80, 60);
-
-        g.fillRect(160, 160, 40, 20);
-        updateMap(160, 160, 40, 20);
-        g.fillRect(220, 160, 40, 20);
-        updateMap(220, 160, 40, 20);
-        g.fillRect(160, 180, 20, 20);
-        updateMap(160, 180, 20, 20);
-        g.fillRect(160, 200, 100, 20);
-        updateMap(160, 200, 100, 20);
-        g.fillRect(240, 180, 20, 20);
-        updateMap(240, 180, 20, 20);
-
-        g.fillRect(120, 120, 60, 20);
-        updateMap(120, 120, 60, 20);
-        g.fillRect(120, 80, 20, 100);
-        updateMap(120, 80, 20, 100);
-        g.fillRect(280, 80, 20, 100);
-        updateMap(280, 80, 20, 100);
-        g.fillRect(240, 120, 60, 20);
-        updateMap(240, 120, 60, 20);
-
-        g.fillRect(280, 200, 20, 60);
-        updateMap(280, 200, 20, 60);
-        g.fillRect(120, 200, 20, 60);
-        updateMap(120, 200, 20, 60);
-        g.fillRect(160, 240, 100, 20);
-        updateMap(160, 240, 100, 20);
-        g.fillRect(200, 260, 20, 40);
-        updateMap(200, 260, 20, 40);
-
-        g.fillRect(120, 280, 60, 20);
-        updateMap(120, 280, 60, 20);
-        g.fillRect(240, 280, 60, 20);
-        updateMap(240, 280, 60, 20);
-
-        g.fillRect(40, 280, 60, 20);
-        updateMap(40, 280, 60, 20);
-        g.fillRect(80, 280, 20, 60);
-        updateMap(80, 280, 20, 60);
-        g.fillRect(320, 280, 60, 20);
-        updateMap(320, 280, 60, 20);
-        g.fillRect(320, 280, 20, 60);
-        updateMap(320, 280, 20, 60);
-
-        g.fillRect(20, 320, 40, 20);
-        updateMap(20, 320, 40, 20);
-        g.fillRect(360, 320, 40, 20);
-        updateMap(360, 320, 40, 20);
-        g.fillRect(160, 320, 100, 20);
-        updateMap(160, 320, 100, 20);
-        g.fillRect(200, 320, 20, 60);
-        updateMap(200, 320, 20, 60);
-
-        g.fillRect(40, 360, 140, 20);
-        updateMap(40, 360, 140, 20);
-        g.fillRect(240, 360, 140, 20);
-        updateMap(240, 360, 140, 20);
-        g.fillRect(280, 320, 20, 40);
-        updateMap(280, 320, 20, 60);
-        g.fillRect(120, 320, 20, 60);
-        updateMap(120, 320, 20, 60);
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                if (map[i][j] == 1) {
+                    g.fillRect((i + 1) * 20, (j + 1) * 20, 20, 20);
+                }
+            }
+        }
         drawLives(g);
     }
 
@@ -321,14 +260,13 @@ public class Board extends JPanel {
 
             g.setFont(font);
             g.drawString("PRESS 'A' for A*", 100, 180);
+            g.drawString("PRESS 'D' for Dijkstra", 100, 210);
             g.drawString("PRESS 'R' for Random (Classic)", 100, 240);
+            g.drawString("PRESS 'T' for Team", 100, 270);
+            g.drawString("PRESS 'O' for Random Each", 100, 300);
 
             g.setFont(new Font("Monospaced", Font.ITALIC, 14));
-            String current = "";
-            switch(ghostAlg) {
-                case ASTAR: current = "A*"; break;
-                case RANDOM: current = "Random"; break;
-            }
+            String current = ghostAlg.toString();
             g.drawString("CURRENT SELECTION: " + current, 100, 350);
             g.drawString("PRESS 'ENTER' TO START GAME", 100, 380);
 
@@ -368,24 +306,19 @@ public class Board extends JPanel {
         if (New == 1) {
             reset();
             player = new Player(200, 300);
-            ghost1 = new Ghost(180, 180, 1);
-            ghost2 = new Ghost(200, 180, 2);
-            ghost3 = new Ghost(220, 180, 3);
-            ghost4 = new Ghost(220, 180, 4);
+            ghost1 = new Ghost(180, 180);
+            ghost2 = new Ghost(200, 180);
+            ghost3 = new Ghost(220, 180);
+            ghost4 = new Ghost(220, 180);
             currScore = 0;
             drawBoard(g);
             drawPellets(g);
-            drawLives(g);
             player.updateState(map);
             player.map[9][7] = 1;
             ghost1.updateState(map);
             ghost2.updateState(map);
             ghost3.updateState(map);
             ghost4.updateState(map);
-            ghost1.algorithm = ghostAlg;
-            ghost2.algorithm = ghostAlg;
-            ghost3.algorithm = ghostAlg;
-            ghost4.algorithm = ghostAlg;
 
             g.setColor(Color.YELLOW);
             g.setFont(font);
